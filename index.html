@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Profit Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            animation: fadeInDown 1s ease;
+        }
+        
+        header h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            margin-bottom: 15px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            position: relative;
+            display: inline-block;
+        }
+        
+        header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 4px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 2px;
+        }
+        
+        header p {
+            font-size: clamp(1rem, 2vw, 1.3rem);
+            max-width: 700px;
+            margin: 20px auto 0;
+            opacity: 0.9;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            padding: 0 15px;
+        }
+        
+        .calculator-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            overflow: hidden;
+            display: flex;
+            flex-wrap: wrap;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: scaleUp 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        
+        .calculator-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(10px);
+            opacity: 0;
+            animation: glow 20s linear infinite;
+            transition: opacity 0.5s ease;
+            border-radius: 25px;
+        }
+        
+        .calculator-container:hover::before {
+            opacity: 0.3;
+        }
+        
+        .input-section {
+            flex: 1;
+            min-width: 300px;
+            padding: clamp(20px, 4vw, 40px);
+            background: rgba(255,255,255,0.85);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .input-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+            transform: rotate(30deg);
+            z-index: 0;
+        }
+        
+        .result-section {
+            flex: 1;
+            min-width: 300px;
+            padding: clamp(20px, 4vw, 40px);
+            background: rgba(255,255,255,0.95);
+            position: relative;
+        }
+        
+        .section-title {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            margin-bottom: 30px;
+            color: #2c3e50;
+            position: relative;
+            padding-bottom: 15px;
+            z-index: 1;
+            animation: slideInLeft 0.8s ease;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 5px;
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            border-radius: 3px;
+            animation: expandLine 1.5s ease;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            position: relative;
+            z-index: 1;
+            animation: fadeInUp 0.6s ease;
+            animation-fill-mode: both;
+        }
+        
+        .input-group:nth-child(1) { animation-delay: 0.1s; }
+        .input-group:nth-child(2) { animation-delay: 0.2s; }
+        .input-group:nth-child(3) { animation-delay: 0.3s; }
+        .input-group:nth-child(4) { animation-delay: 0.4s; }
+        .input-group:nth-child(5) { animation-delay: 0.5s; }
+        .input-group:nth-child(6) { animation-delay: 0.6s; }
+        
+        label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            display: flex;
+            align-items: center;
+        }
+        
+        label i {
+            margin-right: 12px;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: #3498db;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: clamp(12px, 2vw, 16px) clamp(15px, 2vw, 20px);
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: clamp(1rem, 2vw, 1.1rem);
+            transition: all 0.4s ease;
+            background: rgba(255,255,255,0.9);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .btn-container {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .btn {
+            flex: 1;
+            background: linear-gradient(45deg, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            padding: clamp(14px, 2vw, 18px) 10px;
+            font-size: clamp(1rem, 2vw, 1.1rem);
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.4);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .reset-btn {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.4);
+            flex: 0.5;
+        }
+        
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .reset-btn::after {
+            background: linear-gradient(45deg, #c0392b, #e74c3c);
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 12px 25px rgba(52, 152, 219, 0.6);
+        }
+        
+        .reset-btn:hover {
+            box-shadow: 0 12px 25px rgba(231, 76, 60, 0.6);
+        }
+        
+        .btn:hover::after {
+            opacity: 1;
+        }
+        
+        .btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .result-box {
+            background: linear-gradient(to bottom right, #f8f9ff, #eef2ff);
+            border-radius: 15px;
+            padding: clamp(15px, 2vw, 25px);
+            margin-bottom: 30px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(52, 152, 219, 0.1);
+            animation: fadeIn 1s ease;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(52, 152, 219, 0.2);
+            animation: slideInRight 0.5s ease;
+            animation-fill-mode: both;
+            flex-wrap: wrap;
+        }
+        
+        .result-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .result-value {
+            font-weight: 800;
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            color: #3498db;
+            text-align: right;
+            flex: 1;
+            min-width: 100px;
+        }
+        
+        .profit-value {
+            color: #27ae60;
+            font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+        }
+        
+        .loss-value {
+            color: #e74c3c;
+            font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+        }
+        
+        .chart-container {
+            height: 220px;
+            margin-top: 25px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            gap: clamp(10px, 2vw, 20px);
+            background: rgba(240, 242, 255, 0.7);
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(52, 152, 219, 0.1);
+            position: relative;
+        }
+        
+        .chart-bar {
+            flex: 1;
+            max-width: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translateY(30px);
+            opacity: 0;
+            animation: riseUp 1s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .chart-bar:nth-child(1) { animation-delay: 0.3s; }
+        .chart-bar:nth-child(2) { animation-delay: 0.6s; }
+        .chart-bar:nth-child(3) { animation-delay: 0.9s; }
+        
+        .bar {
+            width: 80%;
+            background: linear-gradient(to top, #3498db, #2c3e50);
+            border-radius: 10px 10px 0 0;
+            transition: height 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            min-height: 10px;
+        }
+        
+        .profit-bar {
+            background: linear-gradient(to top, #27ae60, #2ecc71);
+        }
+        
+        .loss-bar {
+            background: linear-gradient(to top, #e74c3c, #c0392b);
+        }
+        
+        .bar-label {
+            margin-top: 10px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+        }
+        
+        .bar-value {
+            margin-top: 5px;
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            font-weight: 600;
+            color: #3498db;
+        }
+        
+        .profit-status {
+            text-align: center;
+            padding: clamp(15px, 2vw, 20px);
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            margin-top: 20px;
+            display: none;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .profit {
+            background: rgba(39, 174, 96, 0.15);
+            color: #27ae60;
+            border: 2px solid #27ae60;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.2);
+        }
+        
+        .loss {
+            background: rgba(231, 76, 60, 0.15);
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.2);
+        }
+        
+        .tips {
+            background: rgba(255, 253, 231, 0.7);
+            border-left: 5px solid #ffc107;
+            padding: clamp(15px, 2vw, 25px);
+            border-radius: 0 15px 15px 0;
+            margin-top: 25px;
+            animation: fadeIn 1.2s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .tips h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            font-size: clamp(1.2rem, 2.5vw, 1.4rem);
+        }
+        
+        .tips h3 i {
+            margin-right: 10px;
+            color: #ffc107;
+        }
+        
+        .tips ul {
+            padding-left: 20px;
+        }
+        
+        .tips li {
+            margin-bottom: 10px;
+            line-height: 1.5;
+            font-size: clamp(0.95rem, 2vw, 1.1rem);
+            position: relative;
+        }
+        
+        .tips li::before {
+            content: '→';
+            position: absolute;
+            left: -20px;
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+        }
+        
+        .chart-scale {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            font-size: clamp(0.7rem, 2vw, 0.8rem);
+            color: #666;
+            font-weight: 600;
+        }
+        
+        /* Mobile-specific styles */
+        @media (max-width: 768px) {
+            .calculator-container {
+                flex-direction: column;
+            }
+            
+            .btn-container {
+                flex-direction: column;
+            }
+            
+            .chart-container {
+                flex-direction: column;
+                height: auto;
+                padding: 15px;
+                align-items: center;
+            }
+            
+            .chart-bar {
+                width: 80%;
+                max-width: 250px;
+                margin-bottom: 20px;
+                flex-direction: row;
+                align-items: flex-end;
+                justify-content: center;
+                transform: translateX(-30px);
+            }
+            
+            .bar {
+                height: 100px;
+                width: 40px;
+                margin: 0 15px;
+            }
+            
+            .bar-label, .bar-value {
+                margin: 0 10px;
+                min-width: 80px;
+                text-align: left;
+            }
+            
+            .result-item {
+                flex-direction: column;
+            }
+            
+            .result-label, .result-value {
+                min-width: 100%;
+                text-align: left;
+            }
+            
+            .result-value {
+                margin-top: 5px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .calculator-container {
+                border-radius: 20px;
+            }
+            
+            .input-section, .result-section {
+                padding: 20px 15px;
+            }
+            
+            .section-title {
+                font-size: 1.4rem;
+            }
+            
+            .chart-bar {
+                width: 100%;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes scaleUp {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes expandLine {
+            from {
+                width: 0;
+            }
+            to {
+                width: 80px;
+            }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(52, 152, 219, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes riseUp {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes glow {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-calculator"></i> Product Profit Calculator</h1>
+            <p>Calculate your product profitability with multi-currency support and detailed analytics</p>
+        </header>
+        
+        <div class="calculator-container">
+            <div class="input-section">
+                <h2 class="section-title">Product Details</h2>
+                
+                <div class="input-group">
+                    <label for="productName"><i class="fas fa-box"></i> Product Name</label>
+                    <input type="text" id="productName" placeholder="Enter product name" value="Premium Headphones">
+                </div>
+                
+                <div class="input-group">
+                    <label for="currency"><i class="fas fa-money-bill-wave"></i> Currency</label>
+                    <select id="currency">
+                        <option value="USD">US Dollar (USD)</option>
+                        <option value="EUR">Euro (EUR)</option>
+                        <option value="GBP">British Pound (GBP)</option>
+                        <option value="INR">Indian Rupee (INR)</option>
+                        <option value="JPY">Japanese Yen (JPY)</option>
+                        <option value="CAD">Canadian Dollar (CAD)</option>
+                        <option value="AUD">Australian Dollar (AUD)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="costPrice"><i class="fas fa-dollar-sign"></i> Cost Price (per unit)</label>
+                    <input type="number" id="costPrice" placeholder="Enter cost price" value="45">
+                </div>
+                
+                <div class="input-group">
+                    <label for="sellingPrice"><i class="fas fa-tag"></i> Selling Price (per unit)</label>
+                    <input type="number" id="sellingPrice" placeholder="Enter selling price" value="89">
+                </div>
+                
+                <div class="input-group">
+                    <label for="quantity"><i class="fas fa-cubes"></i> Quantity Sold</label>
+                    <input type="number" id="quantity" placeholder="Enter quantity sold" value="250">
+                </div>
+                
+                <div class="input-group">
+                    <label for="expenses"><i class="fas fa-file-invoice-dollar"></i> Additional Expenses</label>
+                    <input type="number" id="expenses" placeholder="Enter additional expenses" value="1200">
+                </div>
+                
+                <div class="btn-container">
+                    <button id="calculateBtn" class="btn">
+                        <i class="fas fa-bolt"></i> Calculate Profit
+                    </button>
+                    <button id="resetBtn" class="btn reset-btn">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h2 class="section-title">Profit Analysis</h2>
+                
+                <div class="result-box">
+                    <div class="result-item">
+                        <span class="result-label">Product:</span>
+                        <span id="resultProduct" class="result-value">Premium Headphones</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">Total Cost:</span>
+                        <span id="totalCost" class="result-value">$0.00</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">Total Revenue:</span>
+                        <span id="totalRevenue" class="result-value">$0.00</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">Additional Expenses:</span>
+                        <span id="totalExpenses" class="result-value">$0.00</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">Net Profit/Loss:</span>
+                        <span id="netProfit" class="result-value profit-value">$0.00</span>
+                    </div>
+                    
+                    <div class="result-item">
+                        <span class="result-label">Profit Margin:</span>
+                        <span id="profitMargin" class="result-value">0.00%</span>
+                    </div>
+                </div>
+                
+                <div id="profitStatus" class="profit-status">
+                    <i class="fas fa-check-circle"></i> You're making a profit!
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-scale">Max: <span id="maxValue">$0</span></div>
+                    <div class="chart-bar">
+                        <div id="costBar" class="bar" style="height: 50px;"></div>
+                        <div class="bar-label">Cost</div>
+                        <div id="costValue" class="bar-value">$0</div>
+                    </div>
+                    
+                    <div class="chart-bar">
+                        <div id="revenueBar" class="bar" style="height: 80px;"></div>
+                        <div class="bar-label">Revenue</div>
+                        <div id="revenueValue" class="bar-value">$0</div>
+                    </div>
+                    
+                    <div class="chart-bar">
+                        <div id="profitBar" class="bar" style="height: 30px;"></div>
+                        <div class="bar-label">Profit</div>
+                        <div id="profitValue" class="bar-value">$0</div>
+                    </div>
+                </div>
+                
+                <div class="tips">
+                    <h3><i class="fas fa-lightbulb"></i> Profit Optimization Tips:</h3>
+                    <ul>
+                        <li>Reduce production costs through bulk purchasing</li>
+                        <li>Increase prices strategically for high-demand products</li>
+                        <li>Minimize overhead expenses where possible</li>
+                        <li>Optimize marketing spend for better ROI</li>
+                        <li>Consider upselling complementary products</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resetBtn = document.getElementById('resetBtn');
+            
+            calculateBtn.addEventListener('click', calculateProfit);
+            resetBtn.addEventListener('click', resetForm);
+            
+            // Initialize with sample values
+            setTimeout(calculateProfit, 800);
+            
+            function calculateProfit() {
+                // Add loading animation
+                const originalBtnHTML = calculateBtn.innerHTML;
+                calculateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculating...';
+                calculateBtn.disabled = true;
+                
+                setTimeout(() => {
+                    // Get input values
+                    const productName = document.getElementById('productName').value;
+                    const currency = document.getElementById('currency').value;
+                    const costPrice = parseFloat(document.getElementById('costPrice').value) || 0;
+                    const sellingPrice = parseFloat(document.getElementById('sellingPrice').value) || 0;
+                    const quantity = parseInt(document.getElementById('quantity').value) || 0;
+                    const expenses = parseFloat(document.getElementById('expenses').value) || 0;
+                    
+                    // Get currency symbol
+                    const currencySymbols = {
+                        'USD': '$',
+                        'EUR': '€',
+                        'GBP': '£',
+                        'INR': '₹',
+                        'JPY': '¥',
+                        'CAD': 'CA$',
+                        'AUD': 'AU$'
+                    };
+                    const symbol = currencySymbols[currency] || '$';
+                    
+                    // Calculate values
+                    const totalCost = costPrice * quantity;
+                    const totalRevenue = sellingPrice * quantity;
+                    const netProfit = totalRevenue - totalCost - expenses;
+                    const profitMargin = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+                    
+                    // Format currency
+                    const formatCurrency = (value) => {
+                        return symbol + value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                    };
+                    
+                    // Update result elements
+                    document.getElementById('resultProduct').textContent = productName;
+                    document.getElementById('totalCost').textContent = formatCurrency(totalCost);
+                    document.getElementById('totalRevenue').textContent = formatCurrency(totalRevenue);
+                    document.getElementById('totalExpenses').textContent = formatCurrency(expenses);
+                    document.getElementById('profitMargin').textContent = profitMargin.toFixed(2) + '%';
+                    
+                    // Update profit/loss styling
+                    const netProfitElement = document.getElementById('netProfit');
+                    const profitStatus = document.getElementById('profitStatus');
+                    
+                    if (netProfit >= 0) {
+                        netProfitElement.className = 'result-value profit-value';
+                        netProfitElement.innerHTML = formatCurrency(netProfit);
+                        profitStatus.className = 'profit-status profit';
+                        profitStatus.innerHTML = '<i class="fas fa-check-circle"></i> You\'re making a profit!';
+                        profitStatus.style.display = 'block';
+                        
+                        // Add confetti effect for profit
+                        createConfetti();
+                    } else {
+                        netProfitElement.className = 'result-value loss-value';
+                        netProfitElement.innerHTML = '-' + formatCurrency(Math.abs(netProfit));
+                        profitStatus.className = 'profit-status loss';
+                        profitStatus.innerHTML = '<i class="fas fa-exclamation-circle"></i> You\'re making a loss!';
+                        profitStatus.style.display = 'block';
+                    }
+                    
+                    // Update chart bars
+                    const maxValue = Math.max(totalCost, totalRevenue, Math.abs(netProfit));
+                    const scaleFactor = maxValue > 0 ? 180 / maxValue : 1; // Prevent division by zero
+                    
+                    document.getElementById('maxValue').textContent = formatCurrency(maxValue);
+                    
+                    document.getElementById('costBar').style.height = (totalCost * scaleFactor) + 'px';
+                    document.getElementById('revenueBar').style.height = (totalRevenue * scaleFactor) + 'px';
+                    
+                    // For profit bar, show absolute value but color differently
+                    const profitBar = document.getElementById('profitBar');
+                    const profitValue = Math.abs(netProfit);
+                    profitBar.style.height = (profitValue * scaleFactor) + 'px';
+                    
+                    if (netProfit >= 0) {
+                        profitBar.className = 'bar profit-bar';
+                    } else {
+                        profitBar.className = 'bar loss-bar';
+                    }
+                    
+                    // Update bar values
+                    document.getElementById('costValue').textContent = formatCurrency(totalCost);
+                    document.getElementById('revenueValue').textContent = formatCurrency(totalRevenue);
+                    document.getElementById('profitValue').textContent = netProfit >= 0 ? 
+                        formatCurrency(profitValue) : '-' + formatCurrency(profitValue);
+                    
+                    // Animate chart bars
+                    document.querySelectorAll('.chart-bar').forEach(bar => {
+                        bar.style.animation = 'none';
+                        setTimeout(() => {
+                            bar.style.animation = 'riseUp 1s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                        }, 10);
+                    });
+                    
+                    // Reset button
+                    calculateBtn.innerHTML = originalBtnHTML;
+                    calculateBtn.disabled = false;
+                }, 800);
+            }
+            
+            function resetForm() {
+                document.getElementById('productName').value = '';
+                document.getElementById('currency').value = 'USD';
+                document.getElementById('costPrice').value = '';
+                document.getElementById('sellingPrice').value = '';
+                document.getElementById('quantity').value = '';
+                document.getElementById('expenses').value = '';
+                
+                document.getElementById('resultProduct').textContent = '';
+                document.getElementById('totalCost').textContent = '$0.00';
+                document.getElementById('totalRevenue').textContent = '$0.00';
+                document.getElementById('totalExpenses').textContent = '$0.00';
+                document.getElementById('netProfit').textContent = '$0.00';
+                document.getElementById('profitMargin').textContent = '0.00%';
+                
+                document.getElementById('profitStatus').style.display = 'none';
+                
+                document.getElementById('costBar').style.height = '0px';
+                document.getElementById('revenueBar').style.height = '0px';
+                document.getElementById('profitBar').style.height = '0px';
+                
+                document.getElementById('costValue').textContent = '$0';
+                document.getElementById('revenueValue').textContent = '$0';
+                document.getElementById('profitValue').textContent = '$0';
+                document.getElementById('maxValue').textContent = '$0';
+                
+                // Reset bar colors
+                document.getElementById('profitBar').className = 'bar';
+            }
+            
+            function createConfetti() {
+                const colors = ['#ff0000', '#ff7300', '#fffb00', '#48ff00', '#00ffd5', '#002bff', '#7a00ff', '#ff00c8'];
+                const container = document.querySelector('.calculator-container');
+                
+                for (let i = 0; i < 80; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.top = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = Math.random() * 10 + 5 + 'px';
+                    confetti.style.height = confetti.style.width;
+                    confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                    confetti.style.opacity = '1';
+                    container.appendChild(confetti);
+                    
+                    // Animate confetti
+                    const animation = confetti.animate([
+                        { transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+                        { transform: `translateY(${Math.random() * 300 + 100}px) rotate(${Math.random() * 360}deg)`, opacity: 0 }
+                    ], {
+                        duration: Math.random() * 2000 + 2000,
+                        easing: 'cubic-bezier(0,0.8,0.2,1)'
+                    });
+                    
+                    animation.onfinish = () => confetti.remove();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
